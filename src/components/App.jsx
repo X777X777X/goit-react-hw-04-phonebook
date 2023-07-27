@@ -1,47 +1,31 @@
-import React, { Component } from 'react';
+import { useEffect, useState } from 'react';
 import { ContactForm } from './ContactForm/ContactForm';
 import { ContactList } from './ContactList/ContactList';
 import { Filter } from './Filter/Filter';
 import { nanoid } from 'nanoid';
-import { ToastContainer } from 'react-toastify';
-import { toast } from 'react-toastify';
+import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import './App.module.css';
+import styles from './App.module.css';
 
-export class App extends Component {
-  state = {
-    contacts: [],
-    filter: '',
-  };
+function App() {
+  const [contacts, setContacts] = useState(
+    () => JSON.parse(localStorage.getItem('contacts')) ?? []
+  );
 
-  //Проверяем наличие сохраненных контактов в localStorage
-  componentDidMount() {
-    const savedContacts = localStorage.getItem('contacts');
-    if (savedContacts) {
-      this.setState({ contacts: JSON.parse(savedContacts) });
-    }
-  }
+  useEffect(() => {
+    window.localStorage.setItem('contacts', JSON.stringify(contacts));
+  }, [contacts]);
 
-  //Сохраняем контакты в localStorage если они изменились
-  componentDidUpdate(prevProps, prevState) {
-    const { contacts } = this.state;
-    if (prevState.contacts !== contacts) {
-      localStorage.setItem('contacts', JSON.stringify(contacts));
-    }
-  }
+  const [filter, setFilter] = useState('');
 
-  formSubmit = ({ name, number }) => {
-    const { contacts } = this.state;
-
-    // Проверка наличия контакта с таким же именем
+  const handleSubmit = ({ name, number }) => {
     const existingContact = contacts.find(
       contact => contact.name.toLowerCase() === name.toLowerCase()
     );
 
-    // Проверка наличия контакта с таким же номером
     if (existingContact) {
       toast.error(`${name} уже существует в контактах!`);
-    } else if (!this.isValidPhoneNumber(number)) {
+    } else if (!isValidPhoneNumber(number)) {
       toast.error('Некорректный формат номера!');
     } else {
       const contact = {
@@ -49,49 +33,40 @@ export class App extends Component {
         name,
         number,
       };
-      this.setState(prevState => ({
-        contacts: [contact, ...prevState.contacts],
-      }));
+      setContacts(prevContacts => [contact, ...prevContacts]);
     }
   };
 
-  changeFilterInput = e => {
-    this.setState({ filter: e.target.value });
+  const handleFilterChange = e => {
+    setFilter(e.target.value);
   };
 
-  findContacts = () => {
-    const { filter, contacts } = this.state;
-    return contacts.filter(contact =>
+  const findContacts = () =>
+    contacts.filter(contact =>
       contact.name.toLowerCase().includes(filter.toLowerCase())
+    );
+
+  const deleteContact = id => {
+    setContacts(prevContacts =>
+      prevContacts.filter(contact => contact.id !== id)
     );
   };
 
-  deleteContact = id => {
-    this.setState(prevState => ({
-      contacts: prevState.contacts.filter(contact => contact.id !== id),
-    }));
-  };
-
-  isValidPhoneNumber = number => {
+  const isValidPhoneNumber = number => {
     const regexPattern =
       /^\+?\d{1,4}[-.\s]?\(?\d{1,3}\)?[-.\s]?\d{1,4}[-.\s]?\d{1,4}[-.\s]?\d{1,9}$/;
     return regexPattern.test(number);
   };
 
-  render() {
-    const { filter } = this.state;
-    return (
-      <section>
-        <ToastContainer autoClose={5000} />
-        <h1>Phonebook</h1>
-        <ContactForm onSubmit={this.formSubmit} />
-        <h2>Contacts</h2>
-        <Filter filter={filter} changeFilterInput={this.changeFilterInput} />
-        <ContactList
-          contacts={this.findContacts()}
-          deleteContact={this.deleteContact}
-        />
-      </section>
-    );
-  }
+  return (
+    <section className={styles.container}>
+      <ToastContainer autoClose={5000} />
+      <h1>Phonebook</h1>
+      <ContactForm onSubmit={handleSubmit} />
+      <h2>Contacts</h2>
+      <Filter filter={filter} changeFilterInput={handleFilterChange} />
+      <ContactList contacts={findContacts()} deleteContact={deleteContact} />
+    </section>
+  );
 }
+export default App;
