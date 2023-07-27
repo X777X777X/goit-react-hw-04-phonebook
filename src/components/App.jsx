@@ -69,4 +69,4 @@ function App() {
     </section>
   );
 }
-export default App;
+export { App };
