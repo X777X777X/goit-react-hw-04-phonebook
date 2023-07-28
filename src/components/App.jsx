@@ -62,7 +62,7 @@ function App() {
     <section className={styles.container}>
       <ToastContainer autoClose={5000} />
       <h1>Phonebook</h1>
-      <ContactForm onSubmit={handleSubmit} />
+      <ContactForm name={''} number={''} onSubmit={handleSubmit} />
       <h2>Contacts</h2>
       <Filter filter={filter} changeFilterInput={handleFilterChange} />
       <ContactList contacts={findContacts()} deleteContact={deleteContact} />
