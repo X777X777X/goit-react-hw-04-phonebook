@@ -1,23 +1,32 @@
 import PropTypes from 'prop-types';
 import css from './ContactList.module.css';
 
-export const ContactList = ({ contacts, deleteContact }) => (
-  <ul className={css.list}>
-    {contacts.map(({ id, name, number }) => {
-      return (
-        <li className={css.item} key={id}>
-          <p className={css.info}>
-            {name}: {number}
-          </p>
-          <button className={css.btn} type="button" onClick={() => deleteContact(id)}>
-          </button>
-        </li>
-      );
-    })}
-  </ul>
-);
+export const ContactList = ({ contacts, deleteContact }) => {
+  const { list, item, info, btn } = css;
 
-  ContactList.propTypes = {
+  return (
+    <ul className={list}>
+      {contacts.map(({ id, name, number }) => {
+        return (
+          <li className={item} key={id}>
+            <p className={info}>
+              {name}: {number}
+            </p>
+            <button
+              className={btn}
+              type="button"
+              onClick={() => deleteContact(id)}
+            >
+              Delete
+            </button>
+          </li>
+        );
+      })}
+    </ul>
+  );
+};
+
+ContactList.propTypes = {
   contacts: PropTypes.arrayOf(
     PropTypes.shape({
       id: PropTypes.string.isRequired,
